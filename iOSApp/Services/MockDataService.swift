@@ -15,10 +15,11 @@ final class MockDataService {
         let directorSummary = UserSummary(id: director.id, name: director.name, role: director.role)
         let supervisorSummary = UserSummary(id: supervisor.id, name: supervisor.name, role: supervisor.role)
         let contractorSummary = UserSummary(id: contractor.id, name: contractor.name, role: contractor.role)
+        let projectUUID = UUID()
 
         let task1 = Task(
             id: UUID(),
-            projectId: UUID(),
+            projectId: projectUUID,
             title: "Replanteo de cimentación",
             description: "Marcar ejes y verificar niveles iniciales.",
             responsible: supervisorSummary,
@@ -36,7 +37,7 @@ final class MockDataService {
 
         let task2 = Task(
             id: UUID(),
-            projectId: UUID(),
+            projectId: projectUUID,
             title: "Losas segundo nivel",
             description: "Colado de losas y revisión de acabados.",
             responsible: contractorSummary,
@@ -49,20 +50,32 @@ final class MockDataService {
             photos: []
         )
 
+        let reportPhoto = PhotoAttachment(id: UUID(), url: URL(string: "https://picsum.photos/300")!, uploadedBy: supervisorSummary, date: Date().addingTimeInterval(-3600 * 5))
         let report = DailyReport(
             id: UUID(),
-            projectId: UUID(),
-            date: Date(),
+            projectId: projectUUID,
+            date: Date().addingTimeInterval(-86400),
             summary: "Excavación y armado de zapatas iniciales.",
             workforce: "2 cuadrillas de 5 personas",
             issues: "Retraso por lluvia, se protege el área.",
+            photos: [reportPhoto],
+            createdBy: supervisorSummary
+        )
+
+        let olderReport = DailyReport(
+            id: UUID(),
+            projectId: projectUUID,
+            date: Date().addingTimeInterval(-86400 * 3),
+            summary: "Revisión de accesos y cercado perimetral.",
+            workforce: "1 cuadrilla de 4 personas",
+            issues: "Sin incidencias.",
             photos: [],
             createdBy: supervisorSummary
         )
 
         let document = Document(
             id: UUID(),
-            projectId: UUID(),
+            projectId: projectUUID,
             taskId: nil,
             name: "Plano cimentación v3",
             type: .plan,
@@ -72,7 +85,7 @@ final class MockDataService {
         )
 
         let project = Project(
-            id: UUID(),
+            id: projectUUID,
             name: "Centro logístico norte",
             client: "ACME Logistics",
             location: "Monterrey, MX",
@@ -81,7 +94,7 @@ final class MockDataService {
             progress: 0.32,
             responsible: directorSummary,
             tasks: [task1, task2],
-            dailyReports: [report],
+            dailyReports: [report, olderReport],
             documents: [document]
         )
 
