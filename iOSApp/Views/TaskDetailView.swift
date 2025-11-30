@@ -4,8 +4,8 @@ struct TaskDetailView: View {
     @StateObject private var viewModel: TaskDetailViewModel
     let project: Project
 
-    init(task: Task, project: Project) {
-        _viewModel = StateObject(wrappedValue: TaskDetailViewModel(task: task))
+    init(task: Task, project: Project, onUpdate: @escaping (Task) -> Void = { _ in }) {
+        _viewModel = StateObject(wrappedValue: TaskDetailViewModel(task: task, onUpdate: onUpdate))
         self.project = project
     }
 
@@ -40,30 +40,79 @@ struct TaskDetailView: View {
                             set: { viewModel.updateProgress($0) }
                         ), in: 0...1)
                         Text("Avance: \(Int(viewModel.task.progress * 100))%")
-                        HStack {
-                            Button("Pendiente") { viewModel.updateStatus(.pending) }
-                            Button("En progreso") { viewModel.updateStatus(.inProgress) }
-                            Button("Finalizar") { viewModel.updateStatus(.completed) }
+                        Picker("Estado", selection: Binding(
+                            get: { viewModel.task.status },
+                            set: { viewModel.updateStatus($0) }
+                        )) {
+                            ForEach(Task.Status.allCases, id: \.self) { status in
+                                Text(label(for: status)).tag(status)
+                            }
                         }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
+                        .pickerStyle(.segmented)
+                    }
+                }
+
+                GroupBox("Adjuntos fotográficos") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if viewModel.task.photos.isEmpty {
+                            ContentUnavailableView("Sin fotos", systemImage: "photo", description: Text("Agrega evidencia desde obra"))
+                        } else {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 12) {
+                                    ForEach(viewModel.task.photos) { photo in
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            AsyncImage(url: photo.url) { image in
+                                                image
+                                                    .resizable()
+                                                    .scaledToFill()
+                                            } placeholder: {
+                                                RoundedRectangle(cornerRadius: 10)
+                                                    .fill(.secondary.opacity(0.2))
+                                                    .overlay(Image(systemName: "photo"))
+                                            }
+                                            .frame(width: 140, height: 90)
+                                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                                            Text(photo.uploadedBy.name)
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                            Text(photo.date, style: .date)
+                                                .font(.caption2)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Button {
+                            viewModel.addPhotoAttachment(by: project.responsible)
+                        } label: {
+                            Label("Adjuntar foto de referencia", systemImage: "paperclip")
+                        }
+                        .buttonStyle(.bordered)
                     }
                 }
 
                 GroupBox("Comentarios") {
                     VStack(alignment: .leading, spacing: 12) {
                         ForEach(viewModel.task.comments) { comment in
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    Text(comment.author.name)
-                                        .bold()
-                                    Spacer()
-                                    Text(comment.date, style: .time)
-                                        .foregroundStyle(.secondary)
+                            HStack {
+                                if comment.author.id == project.responsible.id { Spacer() }
+                                VStack(alignment: .leading, spacing: 4) {
+                                    HStack {
+                                        Text(comment.author.name)
+                                            .bold()
+                                        Text(comment.date, style: .time)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Text(comment.message)
+                                        .padding(10)
+                                        .background(comment.author.id == project.responsible.id ? Color.blue.opacity(0.15) : Color.gray.opacity(0.12))
+                                        .clipShape(RoundedRectangle(cornerRadius: 12))
                                 }
-                                Text(comment.message)
+                                if comment.author.id != project.responsible.id { Spacer() }
                             }
-                            .padding(.vertical, 4)
                         }
                         Divider()
                         HStack {
