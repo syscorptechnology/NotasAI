@@ -5,5 +5,6 @@ struct User: Identifiable, Hashable {
     var name: String
     var email: String
     var role: String
+    var password: String
     var notificationsEnabled: Bool
 }

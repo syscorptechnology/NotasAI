@@ -21,14 +21,21 @@ final class AuthViewModel: ObservableObject {
             return
         }
 
-        if let user = service.users.first(where: { $0.email.lowercased() == email.lowercased() }) {
-            currentUser = user
-            isAuthenticated = true
-            errorMessage = nil
-        } else {
-            errorMessage = "Credenciales incorrectas"
+        guard let user = service.users.first(where: { $0.email.lowercased() == email.lowercased() }) else {
+            errorMessage = "Usuario no registrado"
             isAuthenticated = false
+            return
         }
+
+        guard user.password == password else {
+            errorMessage = "Contraseña incorrecta"
+            isAuthenticated = false
+            return
+        }
+
+        currentUser = user
+        isAuthenticated = true
+        errorMessage = nil
     }
 
     func logout() {

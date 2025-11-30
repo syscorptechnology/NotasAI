@@ -7,9 +7,9 @@ final class MockDataService {
     private(set) var projects: [Project]
 
     private init() {
-        let director = User(id: UUID(), name: "Ana Directora", email: "ana@constructora.com", role: "Directora", notificationsEnabled: true)
-        let supervisor = User(id: UUID(), name: "Carlos Supervisor", email: "carlos@constructora.com", role: "Supervisor", notificationsEnabled: true)
-        let contractor = User(id: UUID(), name: "Lucía Contratista", email: "lucia@proveedor.com", role: "Contratista", notificationsEnabled: false)
+        let director = User(id: UUID(), name: "Ana Directora", email: "ana@constructora.com", role: "Directora", password: "director123", notificationsEnabled: true)
+        let supervisor = User(id: UUID(), name: "Carlos Supervisor", email: "carlos@constructora.com", role: "Supervisor", password: "supervisor123", notificationsEnabled: true)
+        let contractor = User(id: UUID(), name: "Lucía Contratista", email: "lucia@proveedor.com", role: "Contratista", password: "proveedor123", notificationsEnabled: false)
         users = [director, supervisor, contractor]
 
         let directorSummary = UserSummary(id: director.id, name: director.name, role: director.role)
